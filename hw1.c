@@ -22,6 +22,13 @@ void matrixArrayOfArrays(int n, int m){
         }
         printf("\n");
     }
+    //transpose
+    for(int i = 0; i < n; i++){
+        for(int t = 0; t < m; t++){
+            printf("%f\t",mat[t][i]);
+        }
+        printf("\n");
+    }
     for(int i = 0; i < n; i++){
         free(mat[i]);
     }
@@ -31,9 +38,15 @@ void matrixOneBigArray(int n, int m){
     float* mat = malloc((n * m) * sizeof(float));
     float num = 1.0;
 
-    for(int i = 0; i < n * m; i++){
+    for(int i = 0; i < m * n; i++){
         mat[i] = num;
         num += 1.0;
+    }
+    for(int i = 0; i < m; i++){
+        for(int t = 0; t < n; t++){
+            printf("%f\t", mat[t * m + i]);
+        }
+        printf("\n");
     }
     for(int i = 0; i < n; i++){
         for(int t = 0; t < m; t++){
