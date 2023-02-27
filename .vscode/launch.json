@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/icemac/Documents/CISC372",
+      "program": "/Users/icemac/Documents/CISC372/build/Debug/outDebug"
+    }
+  ]
+}
