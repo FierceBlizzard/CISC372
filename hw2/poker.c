@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-typedef enum {
+#include <mpi.h>
+typedef enum
+{
     CLUBS = 0,
     SPADES = 1,
     HEARTS = 2,
     DIAMONDS = 3
 } SUIT;
-typedef struct _card {
+typedef struct _card
+{
     int rank;
     SUIT suit;
 } Card;
@@ -18,7 +21,8 @@ char *labels[4] = {"clubs", "spades", "hearts", "diamonds"};
  * Arguments: card: A pointer to a card object to store the result
  * Returns: None
  */
-void randomCard(Card *card) {
+void randomCard(Card *card)
+{
     int value = rand();
     card->rank = value % 13 + 1;
     card->suit = (SUIT)rand() % 4;
@@ -28,7 +32,8 @@ void randomCard(Card *card) {
  * Arguments: cnt: an output variable to hold the selected number of trials
  * Returns: None
  */
-void getTotalTrials(int *cnt) {
+void getTotalTrials(int *cnt)
+{
     printf("Enter the number of trials:\n");
     scanf("%d", cnt);
 }
@@ -62,10 +67,8 @@ int isStraightFlush(Hand hand)
         if (hand[i].suit != suit)
             return 0;
     for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4 - i; j++)
-        {
-            if (hand[j].rank > hand[j + 1].rank)
-            {
+        for (int j = 0; j < 4 - i; j++){
+            if (hand[j].rank > hand[j + 1].rank){
                 swap = hand[j].rank;
                 hand[j].rank = hand[j + 1].rank;
                 hand[j + 1].rank = swap;
@@ -86,8 +89,7 @@ int isStraightFlush(Hand hand)
  * Arguments: hand: Array of card objects to print out
  * Returns: None
  */
-void printHand(Hand hand)
-{
+void printHand(Hand hand){
     for (int i = 0; i < 5; i++)
         printf("\t(%d of %s)", hand[i].rank, labels[hand[i].suit]);
     printf("\n");
@@ -98,8 +100,7 @@ sorted
  * Arguments: hand: An array of cards to store the result in
  * Returns: None
  */
-void makeStraightFlush1(Hand hand)
-{
+void makeStraightFlush1(Hand hand){
     hand[0].rank = 1;
     hand[0].suit = SPADES;
     hand[1].rank = 2;
@@ -117,8 +118,7 @@ unsorted
  * Arguments: hand: An array of cards to store the result in
  * Returns: None
  */
-void makeStraightFlush2(Hand hand)
-{
+void makeStraightFlush2(Hand hand){
     hand[0].rank = 4;
     hand[0].suit = SPADES;
     hand[1].rank = 8;
@@ -136,8 +136,7 @@ unsorted
  * Arguments: hand: An array of cards to store the result in
  * Returns: None
  */
-void makeStraightFlush3(Hand hand)
-{
+void makeStraightFlush3(Hand hand){
     hand[0].rank = 11;
     hand[0].suit = SPADES;
     hand[1].rank = 13;
@@ -149,36 +148,49 @@ void makeStraightFlush3(Hand hand)
     hand[4].rank = 1;
     hand[4].suit = SPADES;
 }
-int main(int argc, char **argv)
-{
+void getTotalTrials(int* cnt, int rank){
+    if(rank == 0){
+        printf("Enter the number of trials:\n");
+        scanf("%d",cnt);
+    }
+    MPI_Bcast(cnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
+}
+int main(int argc, char **argv){
     int straightFlushes = 0;
     float percent;
     Hand pokerHand;
     srand(time(0));
     int cnt;
-    getTotalTrials(&cnt);
+    getTotalTrials(&cnt, 0);
+    //number of processes
+    int comm_sz;
+    //my process rank
+    int my_rank;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     for (int i = 0; i < cnt; i++)
     {
         int cardCount = 0;
-        while (cardCount < 5)
-        {
+        while (cardCount < 5){
             Card card;
             randomCard(&card);
-            if (!inHand(&card, pokerHand, cardCount))
-            {
+            if (!inHand(&card, pokerHand, cardCount)){
                 pokerHand[cardCount].rank = card.rank;
                 pokerHand[cardCount].suit = card.suit;
                 cardCount++;
             }
         }
-#ifdef DEBUG
+    #ifdef DEBUG
         printHand(pokerHand);
-#endif
-        if (isStraightFlush(pokerHand))
-            straightFlushes++;
+    #endif
+    if (isStraightFlush(pokerHand))
+        straightFlushes++;
     }
+    MPI_Reduce(&straightFlushes, &straightFlushes, 1, MPI_INT,MPI_SUM,0,MPI_COMM_WORLD);
     percent = (float)straightFlushes / (float)cnt * 100.0;
-    printf("We found %d straight flushes out of %d hands or %f percent.\
-n",
-           straightFlushes, cnt, percent);
+    printf("We found %d straight flushes out of %d hands or %f percent.\n", straightFlushes, cnt, percent);
+    MPI_Finalize();
     return 0;
+}

@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/icemac/Documents/CISC372",
-      "program": "/Users/icemac/Documents/CISC372/build/Debug/outDebug"
+      "cwd": "/Users/icemac/Documents/CISC372/hw2",
+      "program": "/Users/icemac/Documents/CISC372/hw2/build/Debug/outDebug"
     }
   ]
 }
